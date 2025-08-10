@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guitar Hero - Jogo Musical</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8));
+        }
+
+        .game-header {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            color: white;
+            z-index: 100;
+        }
+
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .streak {
+            font-size: 18px;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .game-area {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .track-area {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 320px;
+            height: calc(100vh - 200px);
+            background: linear-gradient(to bottom, 
+                rgba(255,255,255,0.1) 0%,
+                rgba(255,255,255,0.05) 50%,
+                rgba(255,255,255,0.1) 100%
+            );
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .note {
+            position: absolute;
+            width: 70px;
+            height: 15px;
+            border-radius: 8px;
+            border: 2px solid white;
+            box-shadow: 0 0 15px rgba(255,255,255,0.5);
+            animation: fallDown linear;
+        }
+
+        .note.lane-0 { left: 10px; background: #ff4444; border-color: #ff6666; }
+        .note.lane-1 { left: 85px; background: #44ff44; border-color: #66ff66; }
+        .note.lane-2 { left: 160px; background: #4444ff; border-color: #6666ff; }
+        .note.lane-3 { left: 235px; background: #ffff44; border-color: #ffff66; }
+
+        @keyframes fallDown {
+            from { top: -20px; }
+            to { top: calc(100% + 20px); }
+        }
+
+        .buttons-area {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .game-button {
+            width: 70px;
+            height: 70px;
+            border-radius: 15px;
+            border: 3px solid white;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            cursor: pointer;
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .game-button:nth-child(1) { background: #ff4444; }
+        .game-button:nth-child(2) { background: #44ff44; }
+        .game-button:nth-child(3) { background: #4444ff; }
+        .game-button:nth-child(4) { background: #ffff44; color: #333; }
+
+        .game-button:active, .game-button.pressed {
+            transform: scale(0.9);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.3);
+        }
+
+        .hit-zone {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 320px;
+            height: 30px;
+            background: rgba(255,255,255,0.3);
+            border: 3px solid #fff;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(255,255,255,0.8), inset 0 0 20px rgba(255,255,255,0.2);
+            animation: hitZonePulse 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes hitZonePulse {
+            0% { box-shadow: 0 0 20px rgba(255,255,255,0.8), inset 0 0 20px rgba(255,255,255,0.2); }
+            100% { box-shadow: 0 0 40px rgba(255,255,255,1), inset 0 0 30px rgba(255,255,255,0.4); }
+        }
+
+        .hit-indicators {
+            position: absolute;
+            bottom: 85px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 320px;
+            height: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+        }
+
+        .hit-indicator {
+            width: 70px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.8);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hit-indicator::after {
+            content: 'TOQUE AQUI';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8px;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .hit-indicator.lane-0 { border-color: #ff6666; background: rgba(255,68,68,0.2); }
+        .hit-indicator.lane-1 { border-color: #66ff66; background: rgba(68,255,68,0.2); }
+        .hit-indicator.lane-2 { border-color: #6666ff; background: rgba(68,68,255,0.2); }
+        .hit-indicator.lane-3 { border-color: #ffff66; background: rgba(255,255,68,0.2); }
+
+        .hit-effect {
+            position: absolute;
+            pointer-events: none;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            animation: hitFeedback 1s ease-out forwards;
+            z-index: 1000;
+        }
+
+        @keyframes hitFeedback {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1.2); }
+        }
+
+        .perfect { color: #ffd700; }
+        .good { color: #44ff44; }
+        .miss { color: #ff4444; }
+
+        .menu-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 1000;
+        }
+
+        .menu-title {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        .menu-button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .menu-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .instructions {
+            text-align: center;
+            max-width: 600px;
+            margin: 20px;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .track-area {
+                width: 280px;
+                bottom: 100px;
+            }
+            
+            .game-button {
+                width: 60px;
+                height: 60px;
+                font-size: 16px;
+            }
+            
+            .note {
+                width: 60px;
+            }
+            
+            .note.lane-0 { left: 10px; }
+            .note.lane-1 { left: 75px; }
+            .note.lane-2 { left: 140px; }
+            .note.lane-3 { left: 205px; }
+            
+            .hit-zone {
+                width: 280px;
+            }
+            
+            .hit-indicators {
+                width: 280px;
+            }
+            
+            .hit-indicator {
+                width: 60px;
+            }
+            
+            .menu-title {
+                font-size: 36px;
+            }
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="menu-screen" id="menuScreen">
+            <h1 class="menu-title">🎸 Guitar Hero 🎸</h1>
+            <div class="instructions">
+                <p><strong>Como Jogar:</strong></p>
+                <p>🔴 Tecla J ou toque no botão vermelho</p>
+                <p>🟢 Tecla O ou toque no botão verde</p>
+                <p>🔵 Tecla A ou toque no botão azul</p>
+                <p>🟡 Tecla O ou toque no botão amarelo</p>
+                <br>
+                <p>Pressione os botões quando as notas atingirem a zona de acerto!</p>
+            </div>
+            <button class="menu-button" onclick="startGame()">▶️ Começar Jogo</button>
+        </div>
+
+        <div class="game-header">
+            <div class="score">Pontos: <span id="score">0</span></div>
+            <div class="streak">Sequência: <span id="streak">0</span></div>
+        </div>
+
+        <div class="game-area">
+            <div class="track-area" id="trackArea"></div>
+            <div class="hit-zone"></div>
+            <div class="hit-indicators">
+                <div class="hit-indicator lane-0"></div>
+                <div class="hit-indicator lane-1"></div>
+                <div class="hit-indicator lane-2"></div>
+                <div class="hit-indicator lane-3"></div>
+            </div>
+        </div>
+
+        <div class="buttons-area">
+            <div class="game-button" data-lane="0">J</div>
+            <div class="game-button" data-lane="1">O</div>
+            <div class="game-button" data-lane="2">A</div>
+            <div class="game-button" data-lane="3">O</div>
+        </div>
+    </div>
+
+    <audio id="gameAudio" preload="auto">
+        <source src="https://diego-malga.github.io/audio.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        class GuitarHeroGame {
+            constructor() {
+                this.score = 0;
+                this.streak = 0;
+                this.multiplier = 1;
+                this.isPlaying = false;
+                this.notes = [];
+                this.activeNotes = [];
+                this.audio = document.getElementById('gameAudio');
+                this.trackArea = document.getElementById('trackArea');
+                this.gameStartTime = 0;
+                this.lastNoteTime = 0;
+                
+                // Configurações do jogo
+                this.noteSpeed = 3000; // 3 segundos para atravessar a tela
+                this.hitZoneHeight = 20;
+                this.trackHeight = window.innerHeight - 200;
+                
+                this.setupEventListeners();
+                this.generateNotePattern();
+            }
+
+            generateNotePattern() {
+                // Padrão de notas sincronizado com a música (nível fácil)
+                // Tempo em segundos desde o início da música
+                const pattern = [
+                    // Intro suave
+                    {time: 2, lane: 0}, {time: 3, lane: 1},
+                    {time: 4.5, lane: 2}, {time: 6, lane: 3},
+                    
+                    // Primeira parte
+                    {time: 8, lane: 0}, {time: 9, lane: 1},
+                    {time: 10, lane: 2}, {time: 11, lane: 0},
+                    {time: 12.5, lane: 3}, {time: 14, lane: 1},
+                    
+                    // Desenvolvimento
+                    {time: 16, lane: 2}, {time: 17, lane: 0},
+                    {time: 18, lane: 1}, {time: 19.5, lane: 3},
+                    {time: 21, lane: 2}, {time: 22, lane: 1},
+                    {time: 23.5, lane: 0}, {time: 25, lane: 3},
+                    
+                    // Parte mais intensa
+                    {time: 27, lane: 1}, {time: 28, lane: 2},
+                    {time: 29, lane: 0}, {time: 30, lane: 3},
+                    {time: 31.5, lane: 1}, {time: 32.5, lane: 2},
+                    {time: 33.5, lane: 0}, {time: 34.5, lane: 3},
+                    
+                    // Continuação
+                    {time: 36, lane: 2}, {time: 37, lane: 1},
+                    {time: 38.5, lane: 0}, {time: 40, lane: 3},
+                    {time: 41.5, lane: 1}, {time: 43, lane: 2},
+                    {time: 44.5, lane: 0}, {time: 46, lane: 3},
+                    
+                    // Final
+                    {time: 48, lane: 1}, {time: 49.5, lane: 2},
+                    {time: 51, lane: 0}, {time: 52.5, lane: 3},
+                    {time: 54, lane: 1}, {time: 55.5, lane: 2},
+                    {time: 57, lane: 0}, {time: 58.5, lane: 3},
+                    {time: 60, lane: 1}
+                ];
+                
+                this.notes = pattern.map(note => ({
+                    ...note,
+                    spawned: false,
+                    hit: false
+                }));
+            }
+
+            setupEventListeners() {
+                // Eventos de teclado
+                document.addEventListener('keydown', (e) => {
+                    if (!this.isPlaying) return;
+                    
+                    const keyMap = {'j': 0, 'o': 1, 'a': 2, 'o': 3};
+                    const lane = keyMap[e.key.toLowerCase()];
+                    
+                    if (lane !== undefined) {
+                        e.preventDefault();
+                        this.pressButton(lane);
+                    }
+                });
+
+                document.addEventListener('keyup', (e) => {
+                    const keyMap = {'j': 0, 'o': 1, 'a': 2, 'o': 3};
+                    const lane = keyMap[e.key.toLowerCase()];
+                    
+                    if (lane !== undefined) {
+                        this.releaseButton(lane);
+                    }
+                });
+
+                // Eventos de toque
+                document.querySelectorAll('.game-button').forEach((button, index) => {
+                    button.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        if (this.isPlaying) {
+                            this.pressButton(index);
+                        }
+                    });
+
+                    button.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        this.releaseButton(index);
+                    });
+
+                    button.addEventListener('mousedown', (e) => {
+                        if (this.isPlaying) {
+                            this.pressButton(index);
+                        }
+                    });
+
+                    button.addEventListener('mouseup', () => {
+                        this.releaseButton(index);
+                    });
+                });
+
+                // Evento de fim da música
+                this.audio.addEventListener('ended', () => {
+                    this.endGame();
+                });
+            }
+
+            pressButton(lane) {
+                const button = document.querySelector(`[data-lane="${lane}"]`);
+                button.classList.add('pressed');
+                this.checkHit(lane);
+            }
+
+            releaseButton(lane) {
+                const button = document.querySelector(`[data-lane="${lane}"]`);
+                button.classList.remove('pressed');
+            }
+
+            checkHit(lane) {
+                const hitZoneTop = this.trackHeight - 125;
+                const hitZoneBottom = this.trackHeight - 85;
+                const hitZoneCenter = (hitZoneTop + hitZoneBottom) / 2;
+                
+                let bestNote = null;
+                let bestDistance = Infinity;
+                
+                // Debug: mostra informações na tela
+                console.log(`Tecla pressionada: Lane ${lane}`);
+                console.log(`Notas ativas:`, this.activeNotes.length);
+                
+                // Encontra a nota mais próxima na lane correta
+                this.activeNotes.forEach((note, index) => {
+                    if (note.lane === lane && !note.hit) {
+                        const noteCenter = note.position + 7.5;
+                        const distance = Math.abs(noteCenter - hitZoneCenter);
+                        
+                        console.log(`Nota ${index}: posição ${note.position}, distância ${distance}`);
+                        
+                        // Zona de acerto muito mais tolerante
+                        if (distance < bestDistance && distance < 80) {
+                            bestDistance = distance;
+                            bestNote = note;
+                        }
+                    }
+                });
+                
+                if (bestNote) {
+                    bestNote.hit = true;
+                    this.removeNote(bestNote.element);
+                    
+                    // Determina a qualidade do hit
+                    let hitQuality, points;
+                    if (bestDistance < 25) {
+                        hitQuality = 'PERFECT!';
+                        points = 100;
+                        this.streak++;
+                    } else if (bestDistance < 50) {
+                        hitQuality = 'GOOD!';
+                        points = 50;
+                        this.streak++;
+                    } else {
+                        hitQuality = 'OK';
+                        points = 25;
+                        this.streak++;
+                    }
+                    
+                    // Aplica multiplicador baseado na sequência
+                    this.multiplier = Math.min(4, Math.floor(this.streak / 10) + 1);
+                    this.score += points * this.multiplier;
+                    
+                    this.showHitEffect(hitQuality, lane);
+                    this.updateUI();
+                    
+                    console.log(`HIT! ${hitQuality} - Pontos: ${points * this.multiplier}`);
+                } else {
+                    // Miss - quebra a sequência
+                    this.streak = 0;
+                    this.multiplier = 1;
+                    this.showHitEffect('MISS', lane);
+                    this.updateUI();
+                    
+                    console.log('MISS!');
+                }
+            }
+
+            showHitEffect(quality, lane) {
+                const effect = document.createElement('div');
+                effect.className = `hit-effect ${quality.toLowerCase().replace('!', '')}`;
+                effect.textContent = quality;
+                
+                const button = document.querySelector(`[data-lane="${lane}"]`);
+                const rect = button.getBoundingClientRect();
+                effect.style.left = rect.left + rect.width / 2 - 25 + 'px';
+                effect.style.top = rect.top - 30 + 'px';
+                
+                document.body.appendChild(effect);
+                
+                setTimeout(() => {
+                    effect.remove();
+                }, 1000);
+            }
+
+            createNote(lane, time) {
+                const note = document.createElement('div');
+                note.className = `note lane-${lane}`;
+                note.style.animationDuration = `${this.noteSpeed}ms`;
+                
+                this.trackArea.appendChild(note);
+                
+                const noteData = {
+                    element: note,
+                    lane: lane,
+                    spawnTime: Date.now(),
+                    hit: false,
+                    position: -20
+                };
+                
+                this.activeNotes.push(noteData);
+                
+                // Remove a nota após a animação
+                setTimeout(() => {
+                    if (!noteData.hit) {
+                        this.removeNote(note);
+                        // Miss por não pressionar
+                        this.streak = 0;
+                        this.multiplier = 1;
+                        this.updateUI();
+                    }
+                }, this.noteSpeed + 100);
+                
+                return noteData;
+            }
+
+            removeNote(noteElement) {
+                if (noteElement && noteElement.parentNode) {
+                    noteElement.parentNode.removeChild(noteElement);
+                }
+                
+                this.activeNotes = this.activeNotes.filter(note => 
+                    note.element !== noteElement
+                );
+            }
+
+            updateNotes() {
+                if (!this.isPlaying) return;
+                
+                const currentTime = (Date.now() - this.gameStartTime) / 1000;
+                
+                // Spawn novas notas
+                this.notes.forEach(note => {
+                    if (!note.spawned && currentTime >= note.time - (this.noteSpeed / 1000)) {
+                        note.spawned = true;
+                        this.createNote(note.lane, note.time);
+                    }
+                });
+                
+                // Atualiza posições das notas ativas
+                this.activeNotes.forEach(note => {
+                    const elapsed = Date.now() - note.spawnTime;
+                    note.position = -20 + (elapsed / this.noteSpeed) * (this.trackHeight + 40);
+                });
+            }
+
+            updateUI() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('streak').textContent = this.streak;
+            }
+
+            startGame() {
+                document.getElementById('menuScreen').style.display = 'none';
+                this.isPlaying = true;
+                this.gameStartTime = Date.now();
+                
+                // Inicia a música
+                this.audio.currentTime = 0;
+                this.audio.play().catch(e => console.log('Erro ao reproduzir áudio:', e));
+                
+                // Loop principal do jogo
+                this.gameLoop = setInterval(() => {
+                    this.updateNotes();
+                }, 16); // ~60 FPS
+            }
+
+            endGame() {
+                this.isPlaying = false;
+                clearInterval(this.gameLoop);
+                
+                alert(`Jogo Finalizado!\nPontuação Final: ${this.score}\nMelhor Sequência: ${this.streak}`);
+                
+                // Volta ao menu
+                document.getElementById('menuScreen').style.display = 'flex';
+                
+                // Reset do jogo
+                this.score = 0;
+                this.streak = 0;
+                this.multiplier = 1;
+                this.activeNotes = [];
+                this.trackArea.innerHTML = '';
+                this.notes.forEach(note => note.spawned = false);
+                this.updateUI();
+            }
+        }
+
+        // Inicializa o jogo
+        let game;
+
+        function startGame() {
+            if (!game) {
+                game = new GuitarHeroGame();
+            }
+            game.startGame();
+        }
+
+        // Carrega o jogo quando a página estiver pronta
+        document.addEventListener('DOMContentLoaded', () => {
+            game = new GuitarHeroGame();
+        });
+    </script>
+</body>
+</html>
