@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aniversário do João - Transformers Adventure</title>
+    <title>Aniversário do João 10 anos - Transformers</title>
     <style>
         body {
             margin: 0;
@@ -44,6 +44,42 @@
             border-radius: 10px;
             border: 2px solid #00ffff;
             font-size: 14px;
+        }
+        
+        .health-bar-container {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .health-bar {
+            width: 150px;
+            height: 20px;
+            background: rgba(255, 0, 0, 0.3);
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-left: 10px;
+            position: relative;
+        }
+        
+        .health-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ff4444);
+            border-radius: 8px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+        }
+        
+        .health-bar-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            line-height: 16px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
         }
         
         #gameOverScreen, #menuScreen {
@@ -482,7 +518,7 @@
                 🎵 Música épica e sons serão ativados quando iniciar o jogo 🎵
             </div>
             <div style="margin-top: 10px; color: #00ffff;">
-                📅 14/09 • domingo • Shopping Internacional
+                📅 14/09 - 11h30 • domingo • Shopping Internacional
             </div>
         </div>
     </div>
@@ -502,7 +538,13 @@
     <div id="ui">
         <div>🎯 Pontos: <span id="score">0</span></div>
         <div>💖 Vidas: <span id="lives">3</span></div>
-        <div>⚡ Energia: <span id="energon">100</span></div>
+        <div class="health-bar-container">
+            <span>⚡ Energia:</span>
+            <div class="health-bar">
+                <div class="health-bar-fill" id="healthBarFill"></div>
+                <div class="health-bar-text" id="healthBarText">100</div>
+            </div>
+        </div>
         <div id="crystalDisplay">🏆 Cristais: <span id="crystals">0</span>/20</div>
         <div>🤖 Decepticons: <span id="decepticons">0</span>/10</div>
     </div>
@@ -994,7 +1036,7 @@
                 y: Math.random() * (canvas.height - 32),
                 width: 32,
                 height: 32,
-                vx: -2 - Math.random() * 2,
+                vx: -1 - Math.random() * 1,
                 vy: (Math.random() - 0.5) * 2,
                 health: 2,
                 lastShot: 0
@@ -1027,7 +1069,8 @@
         
         function createSpecialCrystalsFormation() {
             const formations = [
-                { x: 900, y: 200, letter: 'J' },
+                { x: 850, y: 200, letter: 'J' },
+                { x: 900, y: 200, letter: 'O' },
                 { x: 950, y: 200, letter: 'Ã' },
                 { x: 1000, y: 200, letter: 'O' },
                 { x: 1100, y: 200, letter: '1' },
@@ -1173,7 +1216,7 @@
             
             // Update enemies
             gameState.enemies.forEach((enemy, index) => {
-                enemy.x += enemy.vx - 1;
+                enemy.x += enemy.vx - 0.5;
                 enemy.y += enemy.vy;
                 
                 if (enemy.y <= 0 || enemy.y >= canvas.height - enemy.height) {
@@ -1316,8 +1359,27 @@
         function updateUI() {
             document.getElementById('score').textContent = gameState.score;
             document.getElementById('lives').textContent = gameState.lives;
-            document.getElementById('energon').textContent = gameState.energon;
             document.getElementById('decepticons').textContent = gameState.decepticonsDestroyed;
+            
+            // Update health bar
+            const healthPercentage = Math.max(0, gameState.energon);
+            const healthBarFill = document.getElementById('healthBarFill');
+            const healthBarText = document.getElementById('healthBarText');
+            
+            healthBarFill.style.width = healthPercentage + '%';
+            healthBarText.textContent = healthPercentage;
+            
+            // Change color based on health level
+            if (healthPercentage > 60) {
+                healthBarFill.style.background = 'linear-gradient(90deg, #00ff00, #44ff44)';
+                healthBarFill.style.boxShadow = '0 0 10px rgba(0, 255, 0, 0.6)';
+            } else if (healthPercentage > 30) {
+                healthBarFill.style.background = 'linear-gradient(90deg, #ffaa00, #ffcc44)';
+                healthBarFill.style.boxShadow = '0 0 10px rgba(255, 170, 0, 0.6)';
+            } else {
+                healthBarFill.style.background = 'linear-gradient(90deg, #ff0000, #ff4444)';
+                healthBarFill.style.boxShadow = '0 0 10px rgba(255, 0, 0, 0.6)';
+            }
             
             const crystalDisplay = document.getElementById('crystalDisplay');
             if (gameState.phase === 'special') {
