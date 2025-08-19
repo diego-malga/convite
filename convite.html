@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convite do João - 10 Anos! 🎮</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .header {
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .title {
+            font-size: 2.5em;
+            color: #4a5568;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            background: #e2e8f0;
+            height: 12px;
+            border-radius: 6px;
+            margin: 20px 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #48bb78, #38a169);
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: progress-shine 2s infinite;
+        }
+
+        @keyframes progress-shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .question-card {
+            background: linear-gradient(135deg, #f7fafc, #edf2f7);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+            position: relative;
+            transform: scale(0.95);
+            animation: cardAppear 0.6s ease-out forwards;
+        }
+
+        @keyframes cardAppear {
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .question {
+            font-size: 1.3em;
+            color: #2d3748;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        .options {
+            display: grid;
+            gap: 15px;
+        }
+
+        .option {
+            background: white;
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+            transition: all 0.6s ease;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .option:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .option.correct {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            border-color: #38a169;
+            animation: correctAnswer 0.6s ease-out;
+        }
+
+        .option.wrong {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+            color: white;
+            border-color: #e53e3e;
+            animation: wrongAnswer 0.6s ease-out;
+        }
+
+        @keyframes correctAnswer {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes wrongAnswer {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+            100% { transform: translateX(0); }
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            animation: feedbackSlide 0.5s ease-out;
+        }
+
+        @keyframes feedbackSlide {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feedback.correct {
+            background: rgba(72, 187, 120, 0.1);
+            color: #38a169;
+            border: 2px solid rgba(72, 187, 120, 0.3);
+        }
+
+        .feedback.wrong {
+            background: rgba(245, 101, 101, 0.1);
+            color: #e53e3e;
+            border: 2px solid rgba(245, 101, 101, 0.3);
+        }
+
+        .next-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .next-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .next-btn:hover::before {
+            left: 100%;
+        }
+
+        .final-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            animation: finalCardAppear 1s ease-out;
+        }
+
+        @keyframes finalCardAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.8) rotateY(180deg);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) rotateY(0deg);
+            }
+        }
+
+        .final-title {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .party-details {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+            font-size: 1.2em;
+            font-weight: 500;
+        }
+
+        .detail-icon {
+            font-size: 1.5em;
+            margin-right: 15px;
+        }
+
+        .celebration {
+            font-size: 3em;
+            animation: celebrate 2s infinite ease-in-out;
+            margin: 20px 0;
+        }
+
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.2) rotate(-5deg); }
+            75% { transform: scale(1.2) rotate(5deg); }
+        }
+
+        .score-display {
+            font-size: 1.1em;
+            color: #4a5568;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            .title {
+                font-size: 2em;
+            }
+            
+            .question {
+                font-size: 1.1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1 class="title">🎮 Missão: Festa do João!</h1>
+            <p class="subtitle">Complete as lições para descobrir todos os detalhes!</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+
+        <div class="score-display">
+            <span id="scoreText">Pontuação: 0/300 XP</span>
+        </div>
+
+        <div id="gameContent">
+            <!-- Conteúdo será inserido aqui pelo JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        class BirthdayGameApp {
+            constructor() {
+                this.currentQuestion = 0;
+                this.score = 0;
+                this.maxScore = 300;
+                this.questions = [
+                    {
+                        question: "🎂 Quantos anos o João está fazendo?",
+                        options: ["8 anos", "10 anos", "12 anos", "15 anos"],
+                        correct: 1,
+                        feedback: "Isso mesmo! O João está fazendo 10 anos! 🎉",
+                        points: 50
+                    },
+                    {
+                        question: "📅 Qual é a data da festa?",
+                        options: ["12 de setembro", "14 de setembro", "16 de setembro", "18 de setembro"],
+                        correct: 1,
+                        feedback: "Perfeito! A festa será no dia 14 de setembro! 📅",
+                        points: 50
+                    },
+                    {
+                        question: "🕐 Que horas começa a diversão?",
+                        options: ["10h00", "11h30", "13h00", "15h30"],
+                        correct: 1,
+                        feedback: "Exato! A festa começa às 11h30! Não se atrase! ⏰",
+                        points: 50
+                    },
+                    {
+                        question: "🛍️ Onde será realizada a festa?",
+                        options: ["Shopping Iguatemi", "Internacional Shopping", "Shopping Eldorado", "Shopping Morumbi"],
+                        correct: 1,
+                        feedback: "Correto! Será no Internacional Shopping! 🛍️",
+                        points: 75
+                    },
+                    {
+                        question: "🎮 Em que local específico do shopping?",
+                        options: ["Praça de alimentação", "Neo Geo", "Cinema", "Parquinho"],
+                        correct: 1,
+                        feedback: "Isso aí! Será no Neo Geo, o lugar mais divertido! 🕹️",
+                        points: 75
+                    }
+                ];
+                
+                this.init();
+            }
+
+            init() {
+                this.showQuestion();
+            }
+
+            showQuestion() {
+                if (this.currentQuestion >= this.questions.length) {
+                    this.showFinalScreen();
+                    return;
+                }
+
+                const question = this.questions[this.currentQuestion];
+                const gameContent = document.getElementById('gameContent');
+                
+                gameContent.innerHTML = `
+                    <div class="question-card">
+                        <h2 class="question">${question.question}</h2>
+                        <div class="options">
+                            ${question.options.map((option, index) => 
+                                `<div class="option" onclick="game.selectAnswer(${index})" data-index="${index}">
+                                    ${option}
+                                </div>`
+                            ).join('')}
+                        </div>
+                        <div id="feedback"></div>
+                    </div>
+                `;
+
+                this.updateProgress();
+            }
+
+            selectAnswer(selectedIndex) {
+                const question = this.questions[this.currentQuestion];
+                const options = document.querySelectorAll('.option');
+                const feedbackDiv = document.getElementById('feedback');
+                
+                // Desabilita todas as opções
+                options.forEach(option => {
+                    option.style.pointerEvents = 'none';
+                });
+
+                // Marca a resposta correta e incorreta
+                options[question.correct].classList.add('correct');
+                
+                if (selectedIndex !== question.correct) {
+                    options[selectedIndex].classList.add('wrong');
+                }
+
+                // Mostra feedback
+                const isCorrect = selectedIndex === question.correct;
+                feedbackDiv.innerHTML = `
+                    <div class="feedback ${isCorrect ? 'correct' : 'wrong'}">
+                        ${isCorrect ? '🎉 ' : '😅 '}${question.feedback}
+                        ${isCorrect ? `<br><strong>+${question.points} XP!</strong>` : '<br><strong>+10 XP por tentar!</strong>'}
+                    </div>
+                    <button class="next-btn" onclick="game.nextQuestion()">
+                        ${this.currentQuestion === this.questions.length - 1 ? 'Ver Convite! 🎊' : 'Próxima Pergunta! ➡️'}
+                    </button>
+                `;
+
+                // Atualiza pontuação
+                this.score += isCorrect ? question.points : 10;
+                this.updateScore();
+            }
+
+            nextQuestion() {
+                this.currentQuestion++;
+                this.showQuestion();
+            }
+
+            updateProgress() {
+                const progress = ((this.currentQuestion) / this.questions.length) * 100;
+                document.getElementById('progressFill').style.width = `${progress}%`;
+            }
+
+            updateScore() {
+                document.getElementById('scoreText').textContent = `Pontuação: ${this.score}/${this.maxScore} XP`;
+            }
+
+            showFinalScreen() {
+                const gameContent = document.getElementById('gameContent');
+                const progressFill = document.getElementById('progressFill');
+                
+                progressFill.style.width = '100%';
+                
+                gameContent.innerHTML = `
+                    <div class="final-card">
+                        <div class="celebration">🎉🎊🎈</div>
+                        <h2 class="final-title">Missão Completa!</h2>
+                        <p style="font-size: 1.3em; margin-bottom: 20px;">
+                            Parabéns! Você descobriu todos os detalhes da festa! 
+                        </p>
+                        <p style="font-size: 1.1em; margin-bottom: 25px;">
+                            <strong>Sua pontuação final: ${this.score}/${this.maxScore} XP</strong>
+                        </p>
+                        
+                        <div class="party-details">
+                            <h3 style="font-size: 1.8em; margin-bottom: 20px;">🎂 FESTA DO JOÃO - 10 ANOS!</h3>
+                            
+                            <div class="detail-item">
+                                <span class="detail-icon">📅</span>
+                                <span>14 de setembro (sábado)</span>
+                            </div>
+                            
+                            <div class="detail-item">
+                                <span class="detail-icon">🕐</span>
+                                <span>11h30</span>
+                            </div>
+                            
+                            <div class="detail-item">
+                                <span class="detail-icon">📍</span>
+                                <span>Internacional Shopping - Neo Geo</span>
+                            </div>
+                            
+                            <div class="detail-item">
+                                <span class="detail-icon">🎮</span>
+                                <span>Diversão garantida!</span>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 30px; font-size: 1.2em;">
+                            <p><strong>Confirme sua presença!</strong></p>
+                            <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.9;">
+                                Não perca essa festa incrível! 🚀
+                            </p>
+                        </div>
+                        
+                        <div class="celebration">🎈🎁🎂</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Inicia o jogo quando a página carrega
+        let game;
+        window.addEventListener('load', () => {
+            game = new BirthdayGameApp();
+        });
+    </script>
+</body>
+</html>
